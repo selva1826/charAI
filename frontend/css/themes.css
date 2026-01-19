@@ -1,0 +1,120 @@
+/**
+ * Theme Variations
+ * Different sensory-friendly themes
+ */
+
+/* ==================== DINO THEME ==================== */
+
+.dino-theme .coral-left,
+.dino-theme .coral-right,
+.dino-theme .bubbles,
+.dino-theme .sand-floor {
+    display: none;
+}
+
+.dino-theme::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 30%;
+    background: url('/assets/dino-bg.jpg') bottom center/cover;
+    opacity: 0.3;
+}
+
+/* ==================== SPACE THEME ==================== */
+
+.space-theme .coral-left,
+.space-theme .coral-right,
+.space-theme .bubbles,
+.space-theme .sand-floor {
+    display: none;
+}
+
+.space-theme::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(2px 2px at 20% 30%, white, transparent),
+        radial-gradient(2px 2px at 60% 70%, white, transparent),
+        radial-gradient(1px 1px at 50% 50%, white, transparent),
+        radial-gradient(1px 1px at 80% 10%, white, transparent),
+        radial-gradient(2px 2px at 90% 60%, white, transparent);
+    background-size: 200% 200%;
+    animation: stars 50s linear infinite;
+}
+
+@keyframes stars {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 100% 100%; }
+}
+
+/* ==================== TRAIN THEME ==================== */
+
+.train-theme .coral-left,
+.train-theme .coral-right,
+.train-theme .bubbles,
+.train-theme .sand-floor {
+    display: none;
+}
+
+.train-theme::after {
+    content: '🚂 🚃 🚃 🚃';
+    position: absolute;
+    bottom: 20px;
+    left: -200px;
+    font-size: 48px;
+    animation: train-move 20s linear infinite;
+}
+
+@keyframes train-move {
+    0% { left: -200px; }
+    100% { left: 100%; }
+}
+
+/* ==================== CLOUDS THEME ==================== */
+
+.clouds-theme .coral-left,
+.clouds-theme .coral-right,
+.clouds-theme .sand-floor {
+    display: none;
+}
+
+.clouds-theme .bubbles {
+    opacity: 0.5;
+}
+
+.clouds-theme::before,
+.clouds-theme::after {
+    content: '';
+    position: absolute;
+    background: white;
+    border-radius: 100px;
+    opacity: 0.7;
+}
+
+.clouds-theme::before {
+    width: 200px;
+    height: 80px;
+    top: 20%;
+    left: 10%;
+    animation: float-cloud 30s ease-in-out infinite;
+}
+
+.clouds-theme::after {
+    width: 150px;
+    height: 60px;
+    top: 50%;
+    right: 10%;
+    animation: float-cloud 25s ease-in-out infinite reverse;
+}
+
+@keyframes float-cloud {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(50px); }
+}

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroNarrative - Autism-Friendly AI</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/child.css">
+    <link rel="stylesheet" href="/css/placeholders.css">
+
+</head>
+<body>
+    <!-- Full-screen Ocean Background -->
+    <div id="theme-background" class="theme-background ocean-theme"></div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="screen active">
+        <div class="login-container">
+            <h1 class="app-title">🌊 NeuroNarrative</h1>
+            <p class="subtitle">Privacy-first AI companion for autistic children</p>
+            
+            <div class="child-selector">
+                <div id="child-cards" class="child-cards"></div>
+                
+                <div class="new-child-form">
+                    <h3>Create New Profile</h3>
+                    <input type="text" id="new-child-name" placeholder="Enter name" class="input-large">
+                    <button id="btn-create-child" class="btn-primary">Create Profile</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Screen -->
+    <div id="app-screen" class="screen">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="profile-card">
+                <div class="profile-avatar-container">
+                    <div class="avatar-large" id="profile-avatar">👦</div>
+                </div>
+                <h2 id="profile-name">Child</h2>
+                <span class="level-badge" id="profile-level">Level 1</span>
+            </div>
+            
+            <div class="xp-bar-container">
+                <div class="xp-label">
+                    <span>Progress</span>
+                    <span id="xp-value">0 / 100 XP</span>
+                </div>
+                <div class="xp-bar">
+                    <div class="xp-fill" id="xp-fill" style="width: 0%"></div>
+                </div>
+                <p class="xp-text">Keep talking to level up!</p>
+            </div>
+            
+            <div class="streak-info">
+                <span class="streak-emoji">🔥</span>
+                <span id="streak-days">0 Day Streak</span>
+            </div>
+            
+            <!-- Theme Selector -->
+            <div class="theme-selector-container">
+                <h3>🎨 Choose Theme</h3>
+                <div class="theme-buttons" id="theme-buttons">
+                    <button class="theme-btn active" data-theme="ocean" title="Deep Dive">🌊</button>
+                    <button class="theme-btn" data-theme="dino" title="Dino Dig">🦕</button>
+                    <button class="theme-btn" data-theme="space" title="Star Voyager">🚀</button>
+                    <button class="theme-btn" data-theme="train" title="Train Tracks">🚂</button>
+                    <button class="theme-btn" data-theme="clouds" title="Soft Clouds">☁️</button>
+                </div>
+            </div>
+            
+            <div class="badges-section">
+                <h3>🏆 Your Badges</h3>
+                <div class="badges-grid" id="badges-grid">
+                    <div class="badge-item locked" title="First Words">🏅</div>
+                    <div class="badge-item locked" title="Chatty Friend">⭐</div>
+                    <div class="badge-item locked" title="Emotion Expert">💬</div>
+                    <div class="badge-item locked" title="Story Master">📚</div>
+                    <div class="badge-item locked" title="Problem Solver">🧩</div>
+                    <div class="badge-item locked" title="Routine Hero">🎯</div>
+                </div>
+            </div>
+            
+            <button id="btn-view-dashboard" class="btn-secondary">📊 View Progress</button>
+            <button id="btn-logout" class="btn-secondary">← Logout</button>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Character Selection -->
+            <div id="character-selection" class="content-panel active">
+                <div class="screen-header">
+                    <h1 class="page-title">Choose Your AI Friend</h1>
+                    <p class="page-subtitle">Pick a character to chat with!</p>
+                </div>
+                
+                <div class="character-grid" id="character-grid">
+                    <!-- Characters loaded by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Chat Screen -->
+            <div id="chat-screen" class="content-panel">
+                <div class="chat-header">
+                    <button id="btn-back" class="btn-back">
+                        <span>←</span> Back
+                    </button>
+                    <div class="chat-title">
+                        <img id="chat-character-img" src="" alt="" class="character-avatar-large">
+                        <div>
+                            <h2 id="chat-character-name">Character</h2>
+                            <p id="chat-character-role">Role</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Voice Toggle Switch -->
+                    <div class="voice-toggle-container">
+                        <span class="toggle-label">Type</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="voice-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">🎤 Voice</span>
+                    </div>
+                    
+                    <button id="btn-end-session" class="btn-end-session">End Session</button>
+                </div>
+                
+                <div class="emotion-picker">
+                    <p class="emotion-label">How are you feeling?</p>
+                    <div class="emotion-buttons" id="emotion-buttons">
+                        <button class="emotion-btn" data-emotion="happy">
+                            <span class="emotion-emoji">😊</span>
+                            <span>Happy</span>
+                        </button>
+                        <button class="emotion-btn" data-emotion="sad">
+                            <span class="emotion-emoji">😢</span>
+                            <span>Sad</span>
+                        </button>
+                        <button class="emotion-btn" data-emotion="angry">
+                            <span class="emotion-emoji">😠</span>
+                            <span>Angry</span>
+                        </button>
+                        <button class="emotion-btn" data-emotion="scared">
+                            <span class="emotion-emoji">😨</span>
+                            <span>Scared</span>
+                        </button>
+                        <button class="emotion-btn" data-emotion="excited">
+                            <span class="emotion-emoji">🤩</span>
+                            <span>Excited</span>
+                        </button>
+                        <button class="emotion-btn" data-emotion="calm">
+                            <span class="emotion-emoji">😌</span>
+                            <span>Calm</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Main Chat Layout with Emotion Panel -->
+                <div class="chat-layout">
+                    <!-- Chat Container -->
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chat-messages"></div>
+                        
+                        <!-- Anti-Freeze Overlay -->
+                        <div id="anti-freeze-overlay" class="anti-freeze-overlay hidden">
+                            <div class="anti-freeze-content">
+                                <p class="anti-freeze-title">Need help continuing?</p>
+                                <div class="anti-freeze-options">
+                                    <button class="anti-freeze-btn" data-option="continue">
+                                        <span class="option-icon">💬</span>
+                                        <span class="option-text" id="continue-text">Tell me more</span>
+                                    </button>
+                                    <button class="anti-freeze-btn" data-option="shift">
+                                        <span class="option-icon">🔄</span>
+                                        <span class="option-text" id="shift-text">Change topic</span>
+                                    </button>
+                                    <button class="anti-freeze-btn" data-option="break">
+                                        <span class="option-icon">☕</span>
+                                        <span class="option-text">Take a break</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Emotion Expression Panel -->
+                    <div class="emotion-panel" id="emotion-panel">
+                        <div class="emotion-panel-header">
+                            <span class="emotion-panel-title">AI Feeling</span>
+                        </div>
+                        <div class="emotion-display">
+                            <img id="ai-emotion-img" src="/assets/nandhini-neutral.png" alt="AI Emotion" class="ai-emotion-image">
+                            <p id="ai-emotion-label" class="ai-emotion-label">Neutral</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Input Container (changes based on mode) -->
+                <div class="message-input-container" id="input-container">
+                    <!-- Text Input Mode -->
+                    <div id="text-input-mode" class="input-mode active">
+                        <textarea 
+                            id="message-input" 
+                            class="message-input" 
+                            placeholder="Type your message here..."
+                            rows="1"
+                        ></textarea>
+                        <button id="btn-send" class="btn-send">➤</button>
+                    </div>
+                    
+                    <!-- Voice Input Mode -->
+                    <div id="voice-input-mode" class="input-mode">
+                        <button id="btn-record" class="btn-record">
+                            <span class="mic-icon">🎤</span>
+                            <span class="record-text">Tap to Speak</span>
+                        </button>
+                        <div id="recording-indicator" class="recording-indicator hidden">
+                            <span class="recording-pulse"></span>
+                            <span class="recording-text">Listening...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Parent Dashboard -->
+            <div id="parent-dashboard" class="content-panel">
+                <div class="dashboard-header">
+                    <button id="btn-back-from-dashboard" class="btn-back">
+                        <span>←</span> Back
+                    </button>
+                    <h1 class="page-title">Progress Dashboard</h1>
+                </div>
+                
+                <div class="dashboard-content">
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-info">
+                                <p class="stat-label">Total Sessions</p>
+                                <p class="stat-value" id="stat-sessions">0</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">💬</div>
+                            <div class="stat-info">
+                                <p class="stat-label">Avg Turns/Session</p>
+                                <p class="stat-value" id="stat-turns">0</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">😊</div>
+                            <div class="stat-info">
+                                <p class="stat-label">Emoji Accuracy</p>
+                                <p class="stat-value" id="stat-emoji">0%</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">🎯</div>
+                            <div class="stat-info">
+                                <p class="stat-label">Level</p>
+                                <p class="stat-value" id="stat-level">1</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="recent-sessions">
+                        <h2>Recent Sessions</h2>
+                        <div id="session-list" class="session-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load JavaScript -->
+    <script src="/js/api.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>
