@@ -3,15 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeuroNarrative - Autism-Friendly AI</title>
+    <meta name="theme-color" content="#1a5276">
+    <meta name="description" content="NeuroNarrative - A privacy-first AI companion designed to help autistic children develop social and emotional skills through engaging conversations">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>🌊 NeuroNarrative - Autism-Friendly AI Companion</title>
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/child.css">
+    <link rel="stylesheet" href="/css/ocean.css">
+    <link rel="stylesheet" href="/css/animations.css">
     <link rel="stylesheet" href="/css/placeholders.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
 
 </head>
 <body>
-    <!-- Full-screen Ocean Background -->
-    <div id="theme-background" class="theme-background ocean-theme"></div>
+    <!-- Full-screen Ocean Background with ALL Assets -->
+    <div id="theme-background" class="theme-background ocean-theme">
+        <!-- Ocean World with CSS Animations -->
+        <div class="ocean-world">
+            <div class="ocean-gradient"></div>
+            
+            <!-- Light Rays -->
+            <div class="light-rays">
+                <div class="ray"></div>
+                <div class="ray"></div>
+                <div class="ray"></div>
+            </div>
+            
+            <!-- Bubbles Layer -->
+            <div class="bubbles-layer"></div>
+            
+            <!-- Sand Floor (Bottom Layer) -->
+            <img src="/assets/sand-floor.png" class="ocean-asset sand-floor" alt="">
+            
+            <!-- Coral & Seaweed -->
+            <img src="/assets/coral-left.png" class="ocean-asset coral-left" alt="">
+            <img src="/assets/coral-right.png" class="ocean-asset coral-right" alt="">
+            <img src="/assets/seaweed.png" class="ocean-asset seaweed-left" alt="">
+            <img src="/assets/seaweed.png" class="ocean-asset seaweed-right" alt="">
+            
+            <!-- Treasure & Pearl -->
+            <img src="/assets/treasure-chest.png" class="ocean-asset treasure" alt="">
+            <img src="/assets/pearl-shell.png" class="ocean-creature pearl" alt="">
+            
+            <!-- Swimming Creatures -->
+            <img src="/assets/happy-fish.png" class="ocean-creature fish-1" alt="">
+            <img src="/assets/happy-fish.png" class="ocean-creature fish-2" alt="">
+            <img src="/assets/excited-dolphin.png" class="ocean-creature dolphin" alt="">
+            <img src="/assets/scared-jellyfish.png" class="ocean-creature jellyfish jellyfish-1" alt="">
+            <img src="/assets/scared-jellyfish.png" class="ocean-creature jellyfish jellyfish-2" alt="">
+            <img src="/assets/calm-turtle.png" class="ocean-creature turtle" alt="">
+            <img src="/assets/sam-octopus.png" class="ocean-creature octopus" alt="">
+            <img src="/assets/pete-crab.png" class="ocean-creature crab" alt="">
+            <img src="/assets/rita-seahorse.png" class="ocean-creature seahorse" alt="">
+            <img src="/assets/angry-puffer.png" class="ocean-creature puffer" alt="">
+        </div>
+    </div>
 
     <!-- Login Screen -->
     <div id="login-screen" class="screen active">
@@ -189,11 +238,14 @@
                     <!-- AI Emotion Expression Panel -->
                     <div class="emotion-panel" id="emotion-panel">
                         <div class="emotion-panel-header">
-                            <span class="emotion-panel-title">AI Feeling</span>
+                            <span class="emotion-panel-title">🌊 AI Feeling</span>
                         </div>
                         <div class="emotion-display">
-                            <img id="ai-emotion-img" src="/assets/nandhini-neutral.png" alt="AI Emotion" class="ai-emotion-image">
-                            <p id="ai-emotion-label" class="ai-emotion-label">Neutral</p>
+                            <img id="ai-emotion-img" src="/assets/calm-turtle.png" alt="AI Emotion" class="ai-emotion-image">
+                            <p id="ai-emotion-label" class="ai-emotion-label">Calm</p>
+                        </div>
+                        <div class="emotion-hint">
+                            <small>Watch how I feel!</small>
                         </div>
                     </div>
                 </div>
@@ -225,26 +277,88 @@
                 </div>
             </div>
             
-            <!-- Parent Dashboard -->
+            <!-- Parent Dashboard - Enhanced -->
             <div id="parent-dashboard" class="content-panel">
                 <div class="dashboard-header">
                     <button id="btn-back-from-dashboard" class="btn-back">
                         <span>←</span> Back
                     </button>
-                    <h1 class="page-title">Progress Dashboard</h1>
+                    <h1 class="page-title">🌊 Progress Dashboard</h1>
+                    <div class="dashboard-child-info">
+                        <span class="child-avatar-small" id="dashboard-avatar">👦</span>
+                        <span class="child-name-small" id="dashboard-name">Child</span>
+                    </div>
                 </div>
                 
                 <div class="dashboard-content">
+                    <!-- Overall Score Card -->
+                    <div class="overall-score-section">
+                        <div class="overall-score-card">
+                            <div class="score-visual">
+                                <div class="score-circle" id="score-circle">
+                                    <span class="score-number" id="overall-score">0</span>
+                                    <span class="score-label">Overall</span>
+                                </div>
+                            </div>
+                            <div class="score-details">
+                                <h3 class="score-stage" id="dev-stage">Exploring</h3>
+                                <p class="score-description" id="dev-description">Beginning the journey. Be patient and supportive.</p>
+                            </div>
+                            <div class="score-decoration">
+                                <img src="/assets/steve-turtle.png" alt="" class="score-mascot">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hero Stats -->
+                    <div class="hero-stats">
+                        <div class="hero-stat level-card">
+                            <div class="hero-stat-icon">
+                                <img src="/assets/treasure-chest.png" alt="Level" class="hero-icon-img">
+                            </div>
+                            <div class="hero-stat-content">
+                                <span class="hero-stat-value" id="stat-level">1</span>
+                                <span class="hero-stat-label">Level Achieved</span>
+                            </div>
+                        </div>
+                        <div class="hero-stat streak-card">
+                            <div class="hero-stat-icon">🔥</div>
+                            <div class="hero-stat-content">
+                                <span class="hero-stat-value" id="stat-streak">0</span>
+                                <span class="hero-stat-label">Day Streak</span>
+                            </div>
+                        </div>
+                        <div class="hero-stat xp-card">
+                            <div class="hero-stat-icon">
+                                <img src="/assets/pearl-shell.png" alt="XP" class="hero-icon-img">
+                            </div>
+                            <div class="hero-stat-content">
+                                <span class="hero-stat-value" id="stat-xp">0</span>
+                                <span class="hero-stat-label">Total XP</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Milestones Section -->
+                    <div class="milestones-section">
+                        <h2 class="section-title">🏆 Developmental Milestones</h2>
+                        <div class="milestones-grid" id="milestones-grid">
+                            <!-- Filled by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Main Stats Grid -->
                     <div class="dashboard-grid">
-                        <div class="stat-card">
+                        <div class="stat-card sessions-card">
                             <div class="stat-icon">📊</div>
                             <div class="stat-info">
                                 <p class="stat-label">Total Sessions</p>
                                 <p class="stat-value" id="stat-sessions">0</p>
                             </div>
+                            <div class="stat-trend positive">↑ Great!</div>
                         </div>
                         
-                        <div class="stat-card">
+                        <div class="stat-card turns-card">
                             <div class="stat-icon">💬</div>
                             <div class="stat-info">
                                 <p class="stat-label">Avg Turns/Session</p>
@@ -252,26 +366,171 @@
                             </div>
                         </div>
                         
-                        <div class="stat-card">
+                        <div class="stat-card emoji-card">
                             <div class="stat-icon">😊</div>
                             <div class="stat-info">
-                                <p class="stat-label">Emoji Accuracy</p>
+                                <p class="stat-label">Emotion Expression</p>
                                 <p class="stat-value" id="stat-emoji">0%</p>
                             </div>
                         </div>
                         
-                        <div class="stat-card">
-                            <div class="stat-icon">🎯</div>
+                        <div class="stat-card conversations-card">
+                            <div class="stat-icon">🗣️</div>
                             <div class="stat-info">
-                                <p class="stat-label">Level</p>
-                                <p class="stat-value" id="stat-level">1</p>
+                                <p class="stat-label">Total Conversations</p>
+                                <p class="stat-value" id="stat-conversations">0</p>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Charts Row -->
+                    <div class="charts-row">
+                        <!-- Emotion Distribution Chart -->
+                        <div class="chart-card emotion-chart">
+                            <h3 class="chart-title">🎭 Emotion Expression</h3>
+                            <div class="emotion-chart-container" id="emotion-chart">
+                                <!-- Filled by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Weekly Activity Chart -->
+                        <div class="chart-card activity-chart">
+                            <h3 class="chart-title">📅 Weekly Activity</h3>
+                            <div class="activity-chart-container" id="activity-chart">
+                                <!-- Filled by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Development Metrics -->
+                    <div class="development-section">
+                        <h2 class="section-title">🌱 Development Insights</h2>
+                        <div class="development-grid">
+                            <div class="development-card">
+                                <div class="dev-header">
+                                    <span class="dev-icon">🗣️</span>
+                                    <span class="dev-title">Communication</span>
+                                </div>
+                                <div class="progress-bars">
+                                    <div class="progress-item">
+                                        <span class="progress-label">Clarity</span>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="clarity-bar" style="width: 0%"></div>
+                                        </div>
+                                        <span class="progress-value" id="clarity-value">0%</span>
+                                    </div>
+                                    <div class="progress-item">
+                                        <span class="progress-label">Engagement</span>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill engagement" id="engagement-bar" style="width: 0%"></div>
+                                        </div>
+                                        <span class="progress-value" id="engagement-value">0%</span>
+                                    </div>
+                                    <div class="progress-item">
+                                        <span class="progress-label">Reciprocity</span>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill reciprocity" id="reciprocity-bar" style="width: 0%"></div>
+                                        </div>
+                                        <span class="progress-value" id="reciprocity-value">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="development-card">
+                                <div class="dev-header">
+                                    <span class="dev-icon">🧠</span>
+                                    <span class="dev-title">Cognitive Skills</span>
+                                </div>
+                                <div class="progress-bars">
+                                    <div class="progress-item">
+                                        <span class="progress-label">Sentence Complexity</span>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill complexity" id="complexity-bar" style="width: 0%"></div>
+                                        </div>
+                                        <span class="progress-value" id="complexity-value">0</span>
+                                    </div>
+                                    <div class="progress-item">
+                                        <span class="progress-label">Vocabulary</span>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill vocabulary" id="vocabulary-bar" style="width: 0%"></div>
+                                        </div>
+                                        <span class="progress-value" id="vocabulary-value">0%</span>
+                                    </div>
+                                    <div class="progress-item">
+                                        <span class="progress-label">Topic Focus</span>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill topic" id="topic-bar" style="width: 0%"></div>
+                                        </div>
+                                        <span class="progress-value" id="topic-value">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="development-card emotional-card">
+                                <div class="dev-header">
+                                    <span class="dev-icon">💖</span>
+                                    <span class="dev-title">Emotional Growth</span>
+                                </div>
+                                <div class="emotional-stats">
+                                    <div class="emotional-stat">
+                                        <span class="emotional-number" id="emotion-variety">0</span>
+                                        <span class="emotional-label">Emotions Used</span>
+                                    </div>
+                                    <div class="emotional-stat">
+                                        <span class="emotional-number positive-text" id="positive-ratio">0%</span>
+                                        <span class="emotional-label">Positive Expressions</span>
+                                    </div>
+                                    <div class="emotional-stat">
+                                        <span class="emotional-number" id="total-expressions">0</span>
+                                        <span class="emotional-label">Total Expressions</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommendations Section -->
+                    <div class="recommendations-section">
+                        <h2 class="section-title">💡 Personalized Recommendations</h2>
+                        <div class="recommendations-grid" id="recommendations-grid">
+                            <!-- Filled by JS -->
+                        </div>
+                    </div>
+
+                    <!-- AI Report Section -->
+                    <div class="ai-report-section">
+                        <div class="ai-report-header">
+                            <img src="/assets/calm-turtle.png" alt="AI" class="ai-report-avatar">
+                            <div>
+                                <h2 class="section-title">🌟 AI Progress Report</h2>
+                                <p class="report-subtitle">Personalized insights for your child's journey</p>
+                            </div>
+                        </div>
+                        <div class="ai-report-content" id="ai-report">
+                            <p>Loading personalized report...</p>
+                        </div>
+                    </div>
+
+                    <!-- Character Usage -->
+                    <div class="character-usage-section">
+                        <h2 class="section-title">🎭 Favorite AI Friends</h2>
+                        <div class="character-usage-grid" id="character-usage">
+                            <!-- Filled by JS -->
+                        </div>
+                    </div>
                     
+                    <!-- Recent Sessions -->
                     <div class="recent-sessions">
-                        <h2>Recent Sessions</h2>
+                        <h2 class="section-title">📝 Recent Sessions</h2>
                         <div id="session-list" class="session-list"></div>
+                    </div>
+
+                    <!-- Badges Earned -->
+                    <div class="badges-earned-section">
+                        <h2 class="section-title">🏆 Badges Earned</h2>
+                        <div class="badges-earned-grid" id="badges-earned-grid">
+                            <!-- Filled by JS -->
+                        </div>
                     </div>
                 </div>
             </div>

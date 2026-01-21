@@ -1,7 +1,32 @@
 /**
  * NeuroNarrative - Main Styles
  * Base layout and theme backgrounds
+ * Enhanced for autism-friendly, calming experience
  */
+
+:root {
+    /* Ocean Theme Colors */
+    --ocean-deep: #0a2540;
+    --ocean-mid: #1a5276;
+    --ocean-light: #5dade2;
+    --ocean-surface: #aed6f1;
+    
+    /* Accent Colors */
+    --coral: #ff6b6b;
+    --seafoam: #00b894;
+    --pearl: #fdcb6e;
+    --purple: #6c5ce7;
+    --calm-blue: #74b9ff;
+    
+    /* Text Colors */
+    --text-dark: #2d3436;
+    --text-muted: #636e72;
+    
+    /* Shadows */
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 10px 40px rgba(0, 0, 0, 0.15);
+    --shadow-strong: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
 
 * {
     margin: 0;
@@ -13,7 +38,13 @@ html, body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
+}
+
+h1, h2, h3, .app-title {
+    font-family: 'Fredoka One', 'Nunito', sans-serif;
+    font-weight: normal;
 }
 
 /* ==================== FULL-SCREEN BACKGROUND ==================== */
@@ -93,11 +124,13 @@ html, body {
     display: none;
     opacity: 0;
     transition: opacity 0.3s ease;
+    z-index: 10;
 }
 
 .screen.active {
     display: flex;
     opacity: 1;
+    z-index: 10;
 }
 
 /* ==================== LOGIN SCREEN ==================== */
@@ -108,27 +141,65 @@ html, body {
 }
 
 .login-container {
-    background: rgba(255, 255, 255, 0.95);
-    padding: 40px;
-    border-radius: 30px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    max-width: 600px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.92));
+    padding: 50px 40px;
+    border-radius: 40px;
+    box-shadow: 
+        0 25px 80px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+    max-width: 650px;
     width: 90%;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(20px);
+}
+
+.login-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, var(--seafoam), var(--calm-blue), var(--purple), var(--coral));
+    border-radius: 40px 40px 0 0;
+}
+
+.login-container::after {
+    content: '🐠';
+    position: absolute;
+    bottom: 20px;
+    right: 30px;
+    font-size: 40px;
+    opacity: 0.3;
+    animation: swimBounce 3s ease-in-out infinite;
+}
+
+@keyframes swimBounce {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(5deg); }
 }
 
 .app-title {
-    font-size: 48px;
-    font-weight: 800;
-    color: #2d3436;
+    font-size: 56px;
+    font-weight: 400;
+    color: var(--text-dark);
     text-align: center;
     margin-bottom: 10px;
+    background: linear-gradient(135deg, var(--ocean-mid), var(--seafoam));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    letter-spacing: -1px;
 }
 
 .subtitle {
     text-align: center;
-    color: #636e72;
-    font-size: 16px;
-    margin-bottom: 30px;
+    color: var(--text-muted);
+    font-size: 17px;
+    margin-bottom: 35px;
+    font-weight: 600;
 }
 
 .child-cards {

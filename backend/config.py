@@ -14,7 +14,7 @@ class Config:
     OLLAMA_BASE_URL = 'http://localhost:11434'
     OLLAMA_MODEL = 'llama3.2'
     OLLAMA_MODEL_TAMIL = 'sarvam-1'  # For multilingual
-    OLLAMA_TIMEOUT = 30
+    OLLAMA_TIMEOUT = 120  # Increased timeout for slower responses
     
     # Database
     DATABASE_PATH = 'autism_ai.db'

@@ -17,7 +17,7 @@ class OllamaService:
             return False
     
     def generate_response(self, character_id, user_message, emotion=None, 
-                         conversation_history=None, model=None):
+                         conversation_history=None, model=None, context_summary=None):
         """Generate AI response using Ollama with language-specific model"""
         
         # Use specified model or default
@@ -36,6 +36,11 @@ class OllamaService:
             emotion_context = f"\n\nThe child is feeling: {emotion}"
             system_prompt += emotion_context
         
+        # Add context summary for memory continuity
+        memory_context = ""
+        if context_summary:
+            memory_context = f"\n\nPREVIOUS CONTEXT (remember this about the child):\n{context_summary}\n"
+        
         # Build conversation context
         context = ""
         if conversation_history and len(conversation_history) > 0:
@@ -44,7 +49,16 @@ class OllamaService:
                 context += f"Child: {conv.get('message', '')}\n"
                 context += f"You: {conv.get('response', '')}\n"
         
-        full_prompt = f"{system_prompt}{context}\n\nChild: {user_message}\n\nYou:"
+        full_prompt = f"{system_prompt}{memory_context}{context}\n\nChild: {user_message}\n\nYou:"
+        
+        # Fallback responses based on character
+        fallback_responses = {
+            'nandhini': "I hear you! Tell me more about how you're feeling.",
+            'samyuktha': "That's interesting! What else would you like to share?",
+            'naveen': "Wow! What happens next in your story?",
+            'ramanujan': "Good thinking! Can you tell me more about that?",
+            'rita': "Great! What would you like to do next?"
+        }
         
         try:
             # Call Ollama API
@@ -57,7 +71,7 @@ class OllamaService:
                     'options': {
                         'temperature': 0.7,
                         'top_p': 0.9,
-                        'max_tokens': 100
+                        'num_predict': 100
                     }
                 },
                 timeout=self.timeout
@@ -67,6 +81,10 @@ class OllamaService:
                 result = response.json()
                 ai_response = result.get('response', '').strip()
                 
+                # If empty response, use fallback
+                if not ai_response:
+                    return fallback_responses.get(character_id, "That's great! Tell me more!")
+                
                 # Ensure response is short (max 2-3 sentences)
                 sentences = ai_response.split('. ')
                 if len(sentences) > 2:
@@ -74,13 +92,18 @@ class OllamaService:
                 
                 return ai_response
             else:
-                return "I'm having trouble thinking right now. Can you try again?"
+                print(f"Ollama returned status {response.status_code}")
+                return fallback_responses.get(character_id, "That's wonderful! Can you tell me more?")
         
         except requests.exceptions.Timeout:
-            return "I need more time to think. Please try again."
+            print("Ollama timeout - using fallback response")
+            return fallback_responses.get(character_id, "That sounds interesting! What else?")
+        except requests.exceptions.ConnectionError:
+            print("Ollama connection error - is Ollama running?")
+            return fallback_responses.get(character_id, "I'm listening! Go on...")
         except Exception as e:
             print(f"Ollama error: {str(e)}")
-            return "Something went wrong. Let's try that again!"
+            return fallback_responses.get(character_id, "Tell me more about that!")
     
     def generate_simple(self, prompt):
         """Generate simple completion (for emoji scaffolding, summaries)"""

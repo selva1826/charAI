@@ -97,6 +97,46 @@ class Database:
             )
         ''')
 
+        # Context summaries table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS summaries (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                child_id INTEGER,
+                character TEXT,
+                session_id INTEGER,
+                summary TEXT,
+                evaluation_data TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (child_id) REFERENCES children(id)
+            )
+        ''')
+
+        # Child evaluations table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS evaluations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                child_id INTEGER,
+                session_id INTEGER,
+                character TEXT,
+                evaluation_data TEXT,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (child_id) REFERENCES children(id)
+            )
+        ''')
+
+        # Session chat data
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS session_chats (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                child_id INTEGER,
+                session_id INTEGER,
+                chat_history TEXT,
+                context_summary TEXT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (child_id) REFERENCES children(id)
+            )
+        ''')
+
         conn.commit()
         conn.close()
 
@@ -303,4 +343,135 @@ class Database:
             'sessions': sessions,
             'emoji_logs': emoji_logs
         }
+
+    # ==================== SUMMARY OPERATIONS ====================
+    
+    def save_summary(self, child_id, character, session_id, summary, evaluation=None):
+        """Save context summary"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO summaries (child_id, character, session_id, summary, evaluation_data)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (child_id, character, session_id, summary, json.dumps(evaluation) if evaluation else None))
+        conn.commit()
+        conn.close()
+    
+    def get_latest_summary(self, child_id, character):
+        """Get most recent summary for a child-character pair"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT summary FROM summaries 
+            WHERE child_id = ? AND character = ?
+            ORDER BY created_at DESC LIMIT 1
+        ''', (child_id, character))
+        result = cursor.fetchone()
+        conn.close()
+        return result['summary'] if result else None
+    
+    def get_all_summaries(self, child_id):
+        """Get all summaries for a child"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT * FROM summaries WHERE child_id = ?
+            ORDER BY created_at DESC
+        ''', (child_id,))
+        summaries = [dict(s) for s in cursor.fetchall()]
+        conn.close()
+        return summaries
+
+    # ==================== EVALUATION OPERATIONS ====================
+    
+    def save_evaluation(self, child_id, session_id, character, evaluation_data):
+        """Save child evaluation data"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO evaluations (child_id, session_id, character, evaluation_data)
+            VALUES (?, ?, ?, ?)
+        ''', (child_id, session_id, character, json.dumps(evaluation_data)))
+        conn.commit()
+        conn.close()
+    
+    def get_all_evaluations(self, child_id):
+        """Get all evaluations for a child"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT * FROM evaluations WHERE child_id = ?
+            ORDER BY timestamp DESC
+        ''', (child_id,))
+        evaluations = cursor.fetchall()
+        conn.close()
+        
+        result = []
+        for e in evaluations:
+            eval_dict = dict(e)
+            if eval_dict.get('evaluation_data'):
+                try:
+                    eval_dict.update(json.loads(eval_dict['evaluation_data']))
+                except:
+                    pass
+            result.append(eval_dict)
+        
+        return result
+
+    # ==================== SESSION DATA OPERATIONS ====================
+    
+    def save_session_data(self, child_id, session_id, chat_history, context_summary):
+        """Save session chat data"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        # Check if exists
+        cursor.execute('''
+            SELECT id FROM session_chats WHERE child_id = ? AND session_id = ?
+        ''', (child_id, session_id))
+        existing = cursor.fetchone()
+        
+        if existing:
+            cursor.execute('''
+                UPDATE session_chats 
+                SET chat_history = ?, context_summary = ?, updated_at = datetime('now')
+                WHERE child_id = ? AND session_id = ?
+            ''', (json.dumps(chat_history), context_summary, child_id, session_id))
+        else:
+            cursor.execute('''
+                INSERT INTO session_chats (child_id, session_id, chat_history, context_summary)
+                VALUES (?, ?, ?, ?)
+            ''', (child_id, session_id, json.dumps(chat_history), context_summary))
+        
+        conn.commit()
+        conn.close()
+    
+    def get_session_data(self, child_id, session_id):
+        """Get session chat data"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT * FROM session_chats WHERE child_id = ? AND session_id = ?
+        ''', (child_id, session_id))
+        result = cursor.fetchone()
+        conn.close()
+        
+        if result:
+            data = dict(result)
+            if data.get('chat_history'):
+                data['chat_history'] = json.loads(data['chat_history'])
+            return data
+        return None
+
+    def get_all_sessions(self, child_id):
+        """Get all sessions for a child"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT * FROM sessions WHERE child_id = ?
+            ORDER BY start_time DESC
+        ''', (child_id,))
+        sessions = [dict(s) for s in cursor.fetchall()]
+        conn.close()
+        return sessions
 
