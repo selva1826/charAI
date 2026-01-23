@@ -49,11 +49,12 @@ def create_child():
     data = request.json
     name = data.get('name')
     avatar = data.get('avatar', '👦')
+    age = data.get('age', 10)
     
     if not name:
         return jsonify({'error': 'Name is required'}), 400
     
-    child_id = db.create_child(name, avatar)
+    child_id = db.create_child(name, avatar, age)
     child = db.get_child(child_id)
     
     return jsonify({'child': child}), 201
@@ -69,6 +70,11 @@ def get_child(child_id):
     child['badges'] = badges
     
     return jsonify({'child': child})
+
+@app.route('/api/children/<int:child_id>', methods=['DELETE'])
+def delete_child(child_id):
+    db.delete_child(child_id)
+    return jsonify({'message': 'Profile deleted'})
 
 # ==================== CHARACTERS ====================
 
@@ -140,6 +146,23 @@ def end_session():
 
 # ==================== CHAT ====================
 
+# Safety filter for AI responses
+BLOCKED_WORDS = ['kill', 'murder', 'death', 'die', 'weapon', 'blood', 'stupid', 'dumb', 'idiot', 'hate you', 'scary', 'nightmare', 'monster']
+SAFE_RESPONSES = {
+    'puffy': "I'm here with you. Let's talk about something that makes you happy!",
+    'ollie': "Hey friend! Let's chat about something fun instead!",
+    'sheldon': "Hmm, let me think of a happy story for us!",
+    'clawde': "Let's try a different puzzle. What do you like?",
+    'finley': "It's okay. Let's do something calm together."
+}
+
+def filter_response(response, character):
+    lower_resp = response.lower()
+    for word in BLOCKED_WORDS:
+        if word in lower_resp:
+            return SAFE_RESPONSES.get(character, "Let's talk about something nice!")
+    return response
+
 @app.route('/api/chat', methods=['POST'])
 def chat():
     data = request.json
@@ -149,6 +172,7 @@ def chat():
     emotion = data.get('emotion')
     session_id = data.get('session_id')
     context_summary = data.get('context_summary', '')
+    age = data.get('age', 10)
     
     if not all([child_id, character, message]):
         return jsonify({'error': 'Missing required fields'}), 400
@@ -159,14 +183,18 @@ def chat():
     # Get conversation history
     history = db.get_conversations(child_id, limit=5)
     
-    # Generate response with context summary for memory
+    # Generate response with age context
     response = ollama.generate_response(
         character, 
         message, 
         emotion, 
         history,
-        context_summary=context_summary
+        context_summary=context_summary,
+        age=age
     )
+    
+    # Apply safety filter
+    response = filter_response(response, character)
     
     # Save conversation
     db.save_conversation(child_id, character, message, response, emotion)
@@ -200,6 +228,27 @@ def chat():
         'badges_earned': badges_earned,
         'ai_emotion': ai_emotion
     })
+
+# ==================== AI OPTIONS ====================
+
+@app.route('/api/options', methods=['POST'])
+def generate_options():
+    data = request.json
+    message = data.get('message', '')
+    
+    # Generate 2 relevant options with emojis based on AI's question
+    prompt = f"""Based on this message: "{message}"
+Generate exactly 2 short answer options the child might pick. Add relevant emoji at start.
+Format: one option per line, max 4 words each.
+Example: If asked "what color dragon?" respond with:
+🟢 Green dragon!
+🔵 Blue dragon!
+Just output 2 lines, nothing else."""
+    
+    result = ollama.generate_simple(prompt)
+    options = [line.strip() for line in result.strip().split('\n') if line.strip()][:2]
+    
+    return jsonify({'options': options})
 
 # ==================== VOICE CHAT ====================
 

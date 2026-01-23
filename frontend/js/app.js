@@ -30,6 +30,91 @@ let childEvaluation = {
     maturityIndicators: { sentenceComplexity: 0, vocabularyDiversity: 0 }
 };
 
+// ==================== CRISIS DETECTION ====================
+const CRISIS_KEYWORDS = {
+    en: ['hurt myself', 'kill myself', 'want to die', 'suicide', 'end my life', 'nobody loves me', 
+         'hate myself', 'run away forever', 'disappear', 'better off without me', 'dont want to live',
+         'cut myself', 'harm myself', 'worthless', 'no point living'],
+    ta: ['சாகணும்', 'யாருக்கும் வேண்டாம்', 'என்னை வெறுக்கிறேன்', 'ஓடிப்போகணும்'],
+    hi: ['मरना चाहता', 'कोई प्यार नहीं', 'खुद को नुकसान']
+};
+
+function checkForCrisis(message) {
+    const lowerMsg = message.toLowerCase();
+    const allKeywords = [...CRISIS_KEYWORDS.en, ...CRISIS_KEYWORDS.ta, ...CRISIS_KEYWORDS.hi];
+    
+    for (const keyword of allKeywords) {
+        if (lowerMsg.includes(keyword.toLowerCase())) {
+            showCrisisBanner();
+            saveCrisisAlert(message);
+            return true;
+        }
+    }
+    return false;
+}
+
+function showCrisisBanner() {
+    document.getElementById('crisis-banner').classList.remove('hidden');
+    // Also add gentle AI response
+    setTimeout(() => {
+        addMessage("💙 I can see you're having a really hard time. Those feelings are heavy. A grown-up who cares about you can help. Can you tell a parent or teacher how you feel?", 'ai');
+    }, 500);
+}
+
+function saveCrisisAlert(message) {
+    const alerts = JSON.parse(localStorage.getItem('neuronarrative_crisis_alerts') || '[]');
+    alerts.push({ 
+        message, 
+        timestamp: Date.now(), 
+        childId: currentChild?.id,
+        childName: currentChild?.name,
+        character: currentCharacter
+    });
+    localStorage.setItem('neuronarrative_crisis_alerts', JSON.stringify(alerts));
+}
+
+// ==================== AI OPTIONS SYSTEM ====================
+async function generateOptions(aiMessage) {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/api/options', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: aiMessage })
+        });
+        const data = await response.json();
+        console.log('Options:', data.options);
+        return data.options || [];
+    } catch (e) {
+        console.error('Options error:', e);
+        return [];
+    }
+}
+
+async function showOptionsPopup() {
+    const lastAI = chatHistory.filter(m => m.role === 'ai').pop();
+    if (!lastAI) return;
+    
+    const options = await generateOptions(lastAI.content);
+    if (options.length === 0) return;
+    
+    const popup = document.getElementById('ai-options-popup');
+    const container = document.getElementById('options-buttons');
+    container.innerHTML = options.slice(0, 2).map(opt => 
+        `<button class="option-btn" onclick="selectOption('${opt.replace(/'/g, "\\'")}')">${opt}</button>`
+    ).join('');
+    popup.classList.remove('hidden');
+}
+
+function hideOptionsPopup() {
+    document.getElementById('ai-options-popup').classList.add('hidden');
+}
+
+function selectOption(text) {
+    document.getElementById('message-input').value = text;
+    hideOptionsPopup();
+    sendMessage();
+}
+
 // Character data with real image paths and emoji fallbacks
 // Using available ocean assets for emotions
 const EMOTION_ASSETS = {
@@ -45,39 +130,39 @@ const EMOTION_ASSETS = {
 };
 
 const CHARACTER_INFO = {
-    'nandhini': { 
+    'puffy': { 
         img: '/assets/emma-pufferfish.png',
         emoji: '🐡',
         desc: 'Helps identify and express feelings',
-        greeting: "Hi! I'm Nandhini. How are you feeling today?",
+        greeting: "Hi! I'm Puffy. How are you feeling today?",
         emotions: EMOTION_ASSETS
     },
-    'samyuktha': { 
+    'ollie': { 
         img: '/assets/sam-octopus.png',
         emoji: '🐙',
         desc: 'Teaches conversation and social skills',
-        greeting: "Hi! I'm Samyuktha. Let's chat and have fun!",
+        greeting: "Hi! I'm Ollie. Let's chat and have fun!",
         emotions: EMOTION_ASSETS
     },
-    'naveen': { 
+    'sheldon': { 
         img: '/assets/steve-turtle.png',
         emoji: '🐢',
         desc: 'Inspires creative storytelling',
-        greeting: "Hi! I'm Naveen. Let's create an amazing story together!",
+        greeting: "Hi! I'm Sheldon. Let's create an amazing story together!",
         emotions: EMOTION_ASSETS
     },
-    'ramanujan': { 
+    'clawde': { 
         img: '/assets/pete-crab.png',
         emoji: '🦀',
         desc: 'Teaches problem-solving',
-        greeting: "Hi! I'm Ramanujan. I can help you solve puzzles!",
+        greeting: "Hi! I'm Clawde. I can help you solve puzzles!",
         emotions: EMOTION_ASSETS
     },
-    'rita': {
+    'finley': {
         img: '/assets/rita-seahorse.png',
         emoji: '🦭',
         desc: 'Helps organize daily routines',
-        greeting: "Hi! I'm Rita. I can help you plan your day!",
+        greeting: "Hi! I'm Finley. I can help you plan your day!",
         emotions: EMOTION_ASSETS
     }
 };
@@ -100,15 +185,15 @@ function setupImageFallback() {
             // Get character from src
             let emoji = '🎭'; // Default emoji
             
-            if (img.src.includes('nandhini') || img.src.includes('emma')) {
+            if (img.src.includes('puffy') || img.src.includes('emma')) {
                 emoji = '🐡';
-            } else if (img.src.includes('samyuktha') || img.src.includes('sam')) {
+            } else if (img.src.includes('ollie') || img.src.includes('sam')) {
                 emoji = '🐙';
-            } else if (img.src.includes('naveen') || img.src.includes('steve')) {
+            } else if (img.src.includes('sheldon') || img.src.includes('steve')) {
                 emoji = '🐢';
-            } else if (img.src.includes('ramanujan') || img.src.includes('pete')) {
+            } else if (img.src.includes('clawde') || img.src.includes('pete')) {
                 emoji = '🦀';
-            } else if (img.src.includes('rita')) {
+            } else if (img.src.includes('finley') || img.src.includes('rita')) {
                 emoji = '🦭';
             }
             
@@ -434,29 +519,33 @@ async function processVoiceMessage(transcribedText) {
     }
 }
 
+// Voice settings per character
+const CHAR_VOICES = {
+    'puffy': { pitch: 1.3, rate: 0.8 },    // Soft, slow, gentle
+    'ollie': { pitch: 1.4, rate: 1.1 },    // Cheerful, energetic
+    'sheldon': { pitch: 0.8, rate: 0.7 },  // Deep, slow, wise
+    'clawde': { pitch: 1.0, rate: 0.9 },   // Clear, steady
+    'finley': { pitch: 1.1, rate: 0.85 }   // Calm, organized
+};
+
 function speakText(text) {
     if ('speechSynthesis' in window) {
-        // Cancel any ongoing speech
         speechSynthesis.cancel();
-        
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 0.9; // Slightly slower for clarity
-        utterance.pitch = 1.0;
+        const voiceSettings = CHAR_VOICES[currentCharacter] || { pitch: 1.0, rate: 0.9 };
+        utterance.pitch = voiceSettings.pitch;
+        utterance.rate = voiceSettings.rate;
         utterance.volume = 1.0;
         
-        // Try to use a child-friendly voice
+        // Try to match language from text
         const voices = speechSynthesis.getVoices();
-        const preferredVoice = voices.find(v => 
-            v.name.includes('Female') || 
-            v.name.includes('Google') || 
-            v.name.includes('child')
-        );
-        if (preferredVoice) {
-            utterance.voice = preferredVoice;
-        }
+        const isTamil = /[\u0B80-\u0BFF]/.test(text);
+        const isHindi = /[\u0900-\u097F]/.test(text);
+        
+        let voice = voices.find(v => isTamil ? v.lang.includes('ta') : isHindi ? v.lang.includes('hi') : v.lang.includes('en'));
+        if (voice) utterance.voice = voice;
         
         speechSynthesis.speak(utterance);
-        console.log('🔊 Speaking:', text);
     }
 }
 
@@ -555,8 +644,10 @@ async function loadChildren() {
                 const card = document.createElement('div');
                 card.className = 'child-card';
                 card.innerHTML = `
+                    <button class="btn-delete-profile" onclick="event.stopPropagation(); deleteChild(${child.id}, '${child.name}')" title="Delete Profile">×</button>
                     <div class="avatar-large">${child.avatar}</div>
                     <h3>${child.name}</h3>
+                    <span class="age-badge">${child.age || '?'} years</span>
                     <span class="level-badge">Level ${child.level}</span>
                 `;
                 
@@ -571,24 +662,39 @@ async function loadChildren() {
     }
 }
 
+async function deleteChild(childId, childName) {
+    if (!confirm(`Delete ${childName}'s profile? This cannot be undone.`)) return;
+    
+    try {
+        await fetch(`http://127.0.0.1:5000/api/children/${childId}`, { method: 'DELETE' });
+        // Clear local storage for this child
+        Object.keys(localStorage).forEach(key => {
+            if (key.includes(`_${childId}_`) || key.endsWith(`_${childId}`)) {
+                localStorage.removeItem(key);
+            }
+        });
+        await loadChildren();
+    } catch (error) {
+        console.error('❌ Error deleting child:', error);
+    }
+}
+
 async function createChild() {
     const name = document.getElementById('new-child-name').value.trim();
+    const age = document.getElementById('new-child-age').value;
     
-    if (!name) {
-        alert('Please enter a name!');
-        return;
-    }
+    if (!name) { alert('Please enter a name!'); return; }
+    if (!age) { alert('Please select age!'); return; }
     
     try {
         const response = await fetch('http://127.0.0.1:5000/api/children', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, avatar: '👦' })
+            body: JSON.stringify({ name, avatar: '👦', age: parseInt(age) })
         });
         
-        const data = await response.json();
-        
         document.getElementById('new-child-name').value = '';
+        document.getElementById('new-child-age').value = '';
         await loadChildren();
         alert(`Welcome, ${name}! 🎉`);
     } catch (error) {
@@ -708,8 +814,11 @@ async function openChat(charId) {
     const char = characters[charId];
     const info = CHARACTER_INFO[charId];
     
-    // Reset session data
-    resetSessionData();
+    // Load previous messages for this child+character
+    const saved = loadAllChats();
+    chatHistory = saved.chatHistory || [];
+    contextSummary = saved.contextSummary || '';
+    messageCount = saved.messageCount || 0;
     
     try {
         const response = await fetch('http://127.0.0.1:5000/api/session/start', {
@@ -746,24 +855,20 @@ async function openChat(charId) {
     // Set initial AI emotion
     updateAIEmotion('neutral');
     
-    // Create personalized greeting based on context
-    let greeting = info.greeting;
-    if (contextSummary) {
-        greeting = `Welcome back! I remember we were talking before. ${info.greeting}`;
-    }
-    
     const messagesContainer = document.getElementById('chat-messages');
-    messagesContainer.innerHTML = `
-        <div class="message ai-message">
-            <img src="${info.img}" class="message-avatar-img" alt="${char.name}">
-            <div class="message-content">
-                <p class="message-bubble">${greeting}</p>
-            </div>
-        </div>
-    `;
+    messagesContainer.innerHTML = '';
     
-    // Add greeting to chat history
-    chatHistory.push({ role: 'ai', content: greeting, timestamp: Date.now() });
+    // Restore previous messages if any
+    if (chatHistory.length > 0) {
+        chatHistory.forEach(msg => {
+            addMessageToUI(msg.content, msg.role === 'ai' ? 'ai' : 'user', msg.emotion);
+        });
+    } else {
+        // First time greeting
+        const greeting = info.greeting;
+        addMessageToUI(greeting, 'ai');
+        chatHistory.push({ role: 'ai', content: greeting, timestamp: Date.now() });
+    }
     
     // Speak greeting if voice mode
     if (voiceMode) {
@@ -953,6 +1058,13 @@ async function sendMessage() {
     if (!message) return;
     
     console.log('📤 Sending:', message);
+    hideOptionsPopup();
+    
+    // Crisis detection
+    if (checkForCrisis(message)) {
+        input.value = '';
+        return; // Don't send to AI, show crisis support instead
+    }
     
     resetAntiFreezeTimer();
     
@@ -960,11 +1072,8 @@ async function sendMessage() {
     input.value = '';
     input.style.height = 'auto';
     
-    // Track for evaluation
     trackChildMessage(message);
-    
     turnCount++;
-    
     showTyping();
     
     try {
@@ -977,7 +1086,8 @@ async function sendMessage() {
                 message: message,
                 emotion: selectedEmotion,
                 session_id: currentSessionId,
-                context_summary: contextSummary
+                context_summary: contextSummary,
+                age: currentChild.age || 10
             })
         });
         
@@ -1022,6 +1132,9 @@ async function sendMessage() {
             btn.classList.remove('selected');
         });
         
+        // Show AI-generated options immediately
+        showOptionsPopup();
+        
     } catch (error) {
         console.error('❌ Error:', error);
         removeTyping();
@@ -1029,52 +1142,31 @@ async function sendMessage() {
     }
 }
 
-function addMessage(text, sender, emotion = null) {
+function addMessageToUI(text, sender, emotion = null, time = null) {
     const container = document.getElementById('chat-messages');
     const info = CHARACTER_INFO[currentCharacter];
-    
     const div = document.createElement('div');
     div.className = `message ${sender}-message`;
     
-    const timestamp = new Date().toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-    });
+    const timestamp = time || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     
     let emotionBadge = '';
     if (emotion && sender === 'user') {
-        const emotionLabels = {
-            happy: '😊 Happy',
-            sad: '😢 Sad',
-            angry: '😠 Angry',
-            scared: '😨 Scared',
-            excited: '🤩 Excited',
-            calm: '😌 Calm'
-        };
-        emotionBadge = `<span class="message-emotion">${emotionLabels[emotion]}</span>`;
+        const emotionLabels = { happy: '😊 Happy', sad: '😢 Sad', angry: '😠 Angry', scared: '😨 Scared', excited: '🤩 Excited', calm: '😌 Calm' };
+        emotionBadge = `<span class="message-emotion">${emotionLabels[emotion] || ''}</span>`;
     }
     
     if (sender === 'user') {
-        div.innerHTML = `
-            <div class="message-avatar">${currentChild.avatar}</div>
-            <div class="message-content">
-                <p class="message-bubble">${text}</p>
-                ${emotionBadge}
-                <p class="message-timestamp">${timestamp}</p>
-            </div>
-        `;
+        div.innerHTML = `<div class="message-avatar">${currentChild?.avatar || '👦'}</div><div class="message-content"><p class="message-bubble">${text}</p>${emotionBadge}<p class="message-timestamp">${timestamp}</p></div>`;
     } else {
-        div.innerHTML = `
-            <img src="${info.img}" class="message-avatar-img" alt="">
-            <div class="message-content">
-                <p class="message-bubble">${text}</p>
-                <p class="message-timestamp">${timestamp}</p>
-            </div>
-        `;
+        div.innerHTML = `<img src="${info?.img || ''}" class="message-avatar-img" alt=""><div class="message-content"><p class="message-bubble">${text}</p><p class="message-timestamp">${timestamp}</p></div>`;
     }
-    
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
+}
+
+function addMessage(text, sender, emotion = null) {
+    addMessageToUI(text, sender, emotion);
 }
 
 function showTyping() {
@@ -1119,115 +1211,116 @@ function showBadgeNotification(badges) {
 // ==================== DASHBOARD ====================
 
 async function viewDashboard() {
-    console.log('📊 Loading dashboard...');
+    console.log('📊 Opening dashboard in new window...');
+    
+    // Store child data for dashboard window
+    localStorage.setItem('neuronarrative_dashboard_child', JSON.stringify(currentChild));
+    localStorage.setItem('neuronarrative_dashboard_characters', JSON.stringify(characters));
+    
+    // Open dashboard in new window
+    const dashWin = window.open('', 'Dashboard', 'width=1200,height=800,scrollbars=yes');
+    dashWin.document.write('<html><head><title>Loading Dashboard...</title></head><body style="font-family:Nunito,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:linear-gradient(135deg,#1a5276,#2980b9);color:white;"><h2>🌊 Loading Dashboard...</h2></body></html>');
     
     try {
         const response = await fetch(`http://127.0.0.1:5000/api/analytics/parent/${currentChild.id}`);
         const data = await response.json();
         
-        // Update child info
-        document.getElementById('dashboard-avatar').textContent = currentChild.avatar;
-        document.getElementById('dashboard-name').textContent = currentChild.name;
-        
-        // Hero stats
-        document.getElementById('stat-level').textContent = data.level || 1;
-        document.getElementById('stat-streak').textContent = data.streak || 0;
-        document.getElementById('stat-xp').textContent = data.xp || 0;
-        
-        // Main stats
-        document.getElementById('stat-sessions').textContent = data.total_sessions || 0;
-        document.getElementById('stat-turns').textContent = data.avg_turns_per_session?.toFixed(1) || 0;
-        document.getElementById('stat-emoji').textContent = `${data.emoji_accuracy?.toFixed(0) || 0}%`;
-        document.getElementById('stat-conversations').textContent = data.total_conversations || 0;
-        
-        // Render emotion chart
-        renderEmotionChart(data.emotion_distribution || {});
-        
-        // Render activity chart
-        renderActivityChart(data.weekly_activity || {});
-        
-        // Update communication progress bars
-        if (data.communication_progress) {
-            const clarityAvg = calculateArrayAverage(data.communication_progress.clarity);
-            const engagementAvg = calculateArrayAverage(data.communication_progress.engagement);
-            const reciprocityAvg = calculateArrayAverage(data.communication_progress.reciprocity);
-            
-            updateProgressBar('clarity', clarityAvg);
-            updateProgressBar('engagement', engagementAvg);
-            updateProgressBar('reciprocity', reciprocityAvg);
-        }
-        
-        // Update maturity metrics
-        if (data.maturity_metrics) {
-            updateProgressBar('complexity', data.maturity_metrics.sentence_complexity);
-            updateProgressBar('vocabulary', data.maturity_metrics.vocabulary_diversity);
-            updateProgressBar('topic', data.maturity_metrics.topic_maintenance);
-        }
-        
-        // Update emotional growth
-        if (data.emotional_development) {
-            document.getElementById('emotion-variety').textContent = data.emotional_development.emotion_variety || 0;
-            document.getElementById('positive-ratio').textContent = `${data.emotional_development.positive_ratio || 0}%`;
-            document.getElementById('total-expressions').textContent = data.emotional_development.total_expressions || 0;
-        }
-        
-        // Render AI report
-        const reportContainer = document.getElementById('ai-report');
-        if (data.ai_report) {
-            reportContainer.innerHTML = formatAIReport(data.ai_report);
-        } else {
-            reportContainer.innerHTML = '<p class="empty-state">Start chatting to generate personalized insights!</p>';
-        }
-        
-        // Render character usage
-        renderCharacterUsage(data.character_usage || {});
-        
-        // Render session list
-        const sessionList = document.getElementById('session-list');
-        sessionList.innerHTML = '';
-        
-        if (data.recent_sessions && data.recent_sessions.length > 0) {
-            data.recent_sessions.forEach(session => {
-                const charInfo = CHARACTER_INFO[session.character];
-                const item = document.createElement('div');
-                item.className = 'session-item';
-                item.innerHTML = `
-                    <div class="session-character">
-                        <img src="${charInfo?.img || ''}" class="session-char-img" alt="">
-                        <span>${characters[session.character]?.name || session.character}</span>
-                    </div>
-                    <div class="session-details">
-                        <span class="session-stat">💬 ${session.turn_count || 0} turns</span>
-                        <span class="session-stat">⏱️ ${session.duration_minutes?.toFixed(1) || 0} min</span>
-                        <span class="session-date">${formatSessionDate(session.start_time)}</span>
-                    </div>
-                `;
-                sessionList.appendChild(item);
-            });
-        } else {
-            sessionList.innerHTML = '<p class="empty-state">No sessions yet. Start chatting with your AI friends!</p>';
-        }
-        
-        // Render badges
-        renderBadgesEarned(data.badges || []);
-        
-        // Render overall score
-        renderOverallScore(data.overall_score || 0, data.developmental_stage);
-        
-        // Render milestones
-        renderMilestones(data.milestones || []);
-        
-        // Render recommendations
-        renderRecommendations(data.recommendations || []);
-        
-        document.getElementById('character-selection').classList.remove('active');
-        document.getElementById('character-selection').style.display = 'none';
-        document.getElementById('parent-dashboard').classList.add('active');
-        document.getElementById('parent-dashboard').style.display = 'flex';
-        
+        // Build dashboard HTML
+        const dashHTML = buildDashboardHTML(data);
+        dashWin.document.open();
+        dashWin.document.write(dashHTML);
+        dashWin.document.close();
     } catch (error) {
         console.error('Error loading dashboard:', error);
+        dashWin.document.body.innerHTML = '<h2>Error loading dashboard. Please try again.</h2>';
     }
+}
+
+function buildDashboardHTML(data) {
+    const child = currentChild;
+    return `<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>📊 ${child.name}'s Progress Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:linear-gradient(135deg,#1a5276 0%,#2980b9 50%,#3498db 100%);min-height:100vh;color:#2c3e50;padding:20px}
+.container{max-width:1100px;margin:0 auto}
+.header{background:rgba(255,255,255,0.95);border-radius:20px;padding:25px;margin-bottom:20px;display:flex;align-items:center;gap:20px;box-shadow:0 10px 40px rgba(0,0,0,0.2)}
+.avatar{font-size:60px;background:linear-gradient(135deg,#667eea,#764ba2);padding:15px;border-radius:50%}
+.header h1{font-size:28px;color:#1a5276}
+.header p{color:#7f8c8d}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-bottom:20px}
+.stat-card{background:rgba(255,255,255,0.95);border-radius:15px;padding:20px;text-align:center;box-shadow:0 5px 20px rgba(0,0,0,0.1)}
+.stat-value{font-size:36px;font-weight:800;color:#1a5276}
+.stat-label{color:#7f8c8d;font-size:14px}
+.section{background:rgba(255,255,255,0.95);border-radius:15px;padding:20px;margin-bottom:20px;box-shadow:0 5px 20px rgba(0,0,0,0.1)}
+.section h2{color:#1a5276;margin-bottom:15px;font-size:20px}
+.progress-item{margin-bottom:12px}
+.progress-label{display:flex;justify-content:space-between;margin-bottom:5px;font-size:14px}
+.progress-bar{height:12px;background:#ecf0f1;border-radius:6px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#3498db,#2980b9);border-radius:6px;transition:width 0.5s}
+.emotion-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.emotion-item{text-align:center;padding:15px;background:#f8f9fa;border-radius:10px}
+.emotion-emoji{font-size:30px}
+.session-item{display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid #ecf0f1}
+.session-item:last-child{border:none}
+.badge-grid{display:flex;gap:15px;flex-wrap:wrap}
+.badge{width:60px;height:60px;display:flex;align-items:center;justify-content:center;font-size:28px;background:#f8f9fa;border-radius:50%;opacity:0.4}
+.badge.earned{opacity:1;background:linear-gradient(135deg,#f1c40f,#f39c12);box-shadow:0 3px 10px rgba(241,196,15,0.4)}
+.close-btn{position:fixed;top:20px;right:20px;background:#e74c3c;color:white;border:none;padding:10px 20px;border-radius:25px;cursor:pointer;font-family:inherit;font-weight:600}
+.close-btn:hover{background:#c0392b}
+</style>
+</head><body>
+<button class="close-btn" onclick="window.close()">✕ Close</button>
+<div class="container">
+<div class="header">
+<div class="avatar">${child.avatar}</div>
+<div><h1>${child.name}'s Progress</h1><p>Level ${data.level || 1} • ${data.xp || 0} XP • 🔥 ${data.streak || 0} Day Streak</p></div>
+</div>
+
+<div class="stats-grid">
+<div class="stat-card"><div class="stat-value">${data.total_sessions || 0}</div><div class="stat-label">Total Sessions</div></div>
+<div class="stat-card"><div class="stat-value">${(data.avg_turns_per_session || 0).toFixed(1)}</div><div class="stat-label">Avg Turns/Session</div></div>
+<div class="stat-card"><div class="stat-value">${(data.emoji_accuracy || 0).toFixed(0)}%</div><div class="stat-label">Emotion Expression</div></div>
+<div class="stat-card"><div class="stat-value">${data.total_conversations || 0}</div><div class="stat-label">Conversations</div></div>
+</div>
+
+<div class="section">
+<h2>🎭 Emotion Distribution</h2>
+<div class="emotion-grid">
+${Object.entries(data.emotion_distribution || {}).map(([e,c]) => `<div class="emotion-item"><div class="emotion-emoji">${{happy:'😊',sad:'😢',angry:'😠',scared:'😨',excited:'🤩',calm:'😌'}[e]||'🎭'}</div><div>${e}: ${c}</div></div>`).join('')}
+</div>
+</div>
+
+<div class="section">
+<h2>🗣️ Communication Progress</h2>
+${['clarity','engagement','reciprocity'].map(k => {
+    const v = data.communication_progress?.[k] || [];
+    const avg = v.length ? (v.reduce((a,b)=>a+b,0)/v.length) : 0;
+    return `<div class="progress-item"><div class="progress-label"><span>${k.charAt(0).toUpperCase()+k.slice(1)}</span><span>${avg.toFixed(0)}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${avg}%"></div></div></div>`;
+}).join('')}
+</div>
+
+<div class="section">
+<h2>📝 Recent Sessions</h2>
+${(data.recent_sessions || []).slice(0,5).map(s => `<div class="session-item"><span>${s.character}</span><span>💬 ${s.turn_count||0} turns • ⏱️ ${(s.duration_minutes||0).toFixed(1)} min</span></div>`).join('') || '<p>No sessions yet</p>'}
+</div>
+
+<div class="section">
+<h2>🏆 Badges</h2>
+<div class="badge-grid">
+${['First Words','Chatty Friend','Emotion Expert','Story Master','Problem Solver','Routine Hero'].map((name,i) => {
+    const earned = (data.badges||[]).some(b => b.badge_name === name);
+    return `<div class="badge ${earned?'earned':''}" title="${name}">${['🏅','⭐','💬','📚','🧩','🎯'][i]}</div>`;
+}).join('')}
+</div>
+</div>
+
+${data.ai_report ? `<div class="section"><h2>🌟 AI Progress Report</h2><p>${data.ai_report}</p></div>` : ''}
+</div>
+</body></html>`;
 }
 
 function renderOverallScore(score, stage) {
@@ -1618,12 +1711,12 @@ function showSummaryNotification() {
 // ==================== PERSISTENT STORAGE ====================
 
 function saveChatToStorage() {
-    if (!currentChild || !currentSessionId) return;
+    if (!currentChild || !currentCharacter) return;
     
-    const storageKey = `neuronarrative_chat_${currentChild.id}_${currentSessionId}`;
+    // Save per child+character (persistent across sessions)
+    const storageKey = `neuronarrative_chat_${currentChild.id}_${currentCharacter}`;
     const data = {
         childId: currentChild.id,
-        sessionId: currentSessionId,
         character: currentCharacter,
         chatHistory: chatHistory,
         contextSummary: contextSummary,
@@ -1632,11 +1725,7 @@ function saveChatToStorage() {
     };
     
     localStorage.setItem(storageKey, JSON.stringify(data));
-    
-    // Also save to session index
     saveSessionIndex();
-    
-    // Sync to backend
     syncToBackend(data);
 }
 
@@ -1666,20 +1755,12 @@ function saveSessionIndex() {
     localStorage.setItem(indexKey, JSON.stringify(sessions));
 }
 
-function loadChatFromStorage(sessionId) {
-    if (!currentChild) return null;
+function loadAllChats() {
+    if (!currentChild || !currentCharacter) return {};
     
-    const storageKey = `neuronarrative_chat_${currentChild.id}_${sessionId}`;
+    const storageKey = `neuronarrative_chat_${currentChild.id}_${currentCharacter}`;
     const data = localStorage.getItem(storageKey);
-    
-    if (data) {
-        const parsed = JSON.parse(data);
-        chatHistory = parsed.chatHistory || [];
-        contextSummary = parsed.contextSummary || '';
-        messageCount = parsed.messageCount || 0;
-        return parsed;
-    }
-    return null;
+    return data ? JSON.parse(data) : {};
 }
 
 function getRecentSessions() {

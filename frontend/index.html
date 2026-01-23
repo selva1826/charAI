@@ -74,6 +74,20 @@
                 <div class="new-child-form">
                     <h3>Create New Profile</h3>
                     <input type="text" id="new-child-name" placeholder="Enter name" class="input-large">
+                    <select id="new-child-age" class="input-large">
+                        <option value="">Select Age</option>
+                        <option value="5">5 years</option>
+                        <option value="6">6 years</option>
+                        <option value="7">7 years</option>
+                        <option value="8">8 years</option>
+                        <option value="9">9 years</option>
+                        <option value="10">10 years</option>
+                        <option value="11">11 years</option>
+                        <option value="12">12 years</option>
+                        <option value="13">13 years</option>
+                        <option value="14">14 years</option>
+                        <option value="15">15 years</option>
+                    </select>
                     <button id="btn-create-child" class="btn-primary">Create Profile</button>
                 </div>
             </div>
@@ -250,8 +264,22 @@
                     </div>
                 </div>
                 
+                <!-- Crisis Support Banner -->
+                <div id="crisis-banner" class="crisis-banner hidden">
+                    <span class="crisis-icon">💙</span>
+                    <span class="crisis-text">I hear you. Let's talk to someone who can help.</span>
+                    <a href="tel:9152987821" class="crisis-link">📞 iCall: 9152987821</a>
+                    <button class="crisis-close" onclick="document.getElementById('crisis-banner').classList.add('hidden')">×</button>
+                </div>
+                
                 <!-- Input Container (changes based on mode) -->
                 <div class="message-input-container" id="input-container">
+                    <!-- AI Suggested Options Popup -->
+                    <div id="ai-options-popup" class="ai-options-popup hidden">
+                        <div class="options-header">💡 Try saying:</div>
+                        <div class="options-buttons" id="options-buttons"></div>
+                    </div>
+                    
                     <!-- Text Input Mode -->
                     <div id="text-input-mode" class="input-mode active">
                         <textarea 

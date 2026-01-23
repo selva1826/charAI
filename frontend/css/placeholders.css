@@ -7,7 +7,7 @@
 .character-avatar-large,
 .message-avatar-img,
 .ai-emotion-image {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #8b9dc3 0%, #a8b5d6 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -16,23 +16,23 @@
 }
 
 /* Specific Character Placeholders */
-img[src*="emma"], img[src*="nandhini"] {
+img[src*="emma"], img[src*="puffy"] {
     content: '🐡';
 }
 
-img[src*="sam"], img[src*="samyuktha"] {
+img[src*="sam"], img[src*="ollie"] {
     content: '🐙';
 }
 
-img[src*="steve"], img[src*="naveen"] {
+img[src*="steve"], img[src*="sheldon"] {
     content: '🐢';
 }
 
-img[src*="pete"], img[src*="ramanujan"] {
+img[src*="pete"], img[src*="clawde"] {
     content: '🦀';
 }
 
-img[src*="rita"] {
+img[src*="rita"], img[src*="finley"] {
     content: '🦭';
 }
 

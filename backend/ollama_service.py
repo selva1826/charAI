@@ -17,7 +17,7 @@ class OllamaService:
             return False
     
     def generate_response(self, character_id, user_message, emotion=None, 
-                         conversation_history=None, model=None, context_summary=None):
+                         conversation_history=None, model=None, context_summary=None, age=10):
         """Generate AI response using Ollama with language-specific model"""
         
         # Use specified model or default
@@ -30,6 +30,14 @@ class OllamaService:
         
         # Build prompt
         system_prompt = character['system_prompt']
+        
+        # Add age-appropriate language adjustment
+        if age <= 7:
+            system_prompt += "\n\nIMPORTANT: This child is very young (5-7 years). Use ONLY 5-8 very simple words. Add emojis. Be extra gentle."
+        elif age <= 11:
+            system_prompt += "\n\nIMPORTANT: This child is 8-11 years old. Use simple sentences. Maximum 2 sentences."
+        else:
+            system_prompt += "\n\nIMPORTANT: This is a pre-teen (12-15 years). Be friendly but not childish."
         
         # Add emotion context if provided
         if emotion:
@@ -53,11 +61,11 @@ class OllamaService:
         
         # Fallback responses based on character
         fallback_responses = {
-            'nandhini': "I hear you! Tell me more about how you're feeling.",
-            'samyuktha': "That's interesting! What else would you like to share?",
-            'naveen': "Wow! What happens next in your story?",
-            'ramanujan': "Good thinking! Can you tell me more about that?",
-            'rita': "Great! What would you like to do next?"
+            'puffy': "I hear you! Tell me more about how you're feeling.",
+            'ollie': "That's interesting! What else would you like to share?",
+            'sheldon': "Wow! What happens next in your story?",
+            'clawde': "Good thinking! Can you tell me more about that?",
+            'finley': "Great! What would you like to do next?"
         }
         
         try:

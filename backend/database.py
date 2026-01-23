@@ -23,6 +23,7 @@ class Database:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
                 avatar TEXT,
+                age INTEGER DEFAULT 10,
                 level INTEGER DEFAULT 1,
                 xp INTEGER DEFAULT 0,
                 streak INTEGER DEFAULT 0,
@@ -30,6 +31,11 @@ class Database:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+        # Add age column if missing (for existing databases)
+        try:
+            cursor.execute('ALTER TABLE children ADD COLUMN age INTEGER DEFAULT 10')
+        except:
+            pass
         
         # Conversations table
         cursor.execute('''
@@ -143,17 +149,30 @@ class Database:
 
     
     # Child operations
-    def create_child(self, name, avatar):
+    def create_child(self, name, avatar, age=10):
         conn = self.get_connection()
         cursor = conn.cursor()
         cursor.execute(
-            'INSERT INTO children (name, avatar) VALUES (?, ?)',
-            (name, avatar)
+            'INSERT INTO children (name, avatar, age) VALUES (?, ?, ?)',
+            (name, avatar, age)
         )
         conn.commit()
         child_id = cursor.lastrowid
         conn.close()
         return child_id
+    
+    def delete_child(self, child_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM conversations WHERE child_id = ?', (child_id,))
+        cursor.execute('DELETE FROM badges WHERE child_id = ?', (child_id,))
+        cursor.execute('DELETE FROM sessions WHERE child_id = ?', (child_id,))
+        cursor.execute('DELETE FROM summaries WHERE child_id = ?', (child_id,))
+        cursor.execute('DELETE FROM evaluations WHERE child_id = ?', (child_id,))
+        cursor.execute('DELETE FROM session_chats WHERE child_id = ?', (child_id,))
+        cursor.execute('DELETE FROM children WHERE id = ?', (child_id,))
+        conn.commit()
+        conn.close()
     
     def get_child(self, child_id):
         conn = self.get_connection()
