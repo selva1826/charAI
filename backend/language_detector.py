@@ -52,6 +52,6 @@ class LanguageDetector:
         Returns: (model_name, base_url)
         """
         if language in ['ta', 'mr']:
-            return ('sarvam-1', 'http://localhost:11434')
+            return ('llama3.2', 'http://localhost:11434')
         else:
             return ('llama3.2', 'http://localhost:11434')
