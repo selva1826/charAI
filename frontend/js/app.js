@@ -349,7 +349,16 @@ function initSpeechRecognition() {
     speechRecognition = new SpeechRecognition();
     speechRecognition.continuous = false;
     speechRecognition.interimResults = true;
-    speechRecognition.lang = 'en-US';
+    // Detect language from current character's language preference
+    const isTamil = currentCharacter && currentCharacter.toLowerCase().includes('tamil');
+    speechRecognition.lang = isTamil ? 'ta-IN' : 'en-US';
+    
+    speechRecognition.onstart = () => {
+        console.log('🎤 Speech recognition started');
+        document.getElementById('btn-record').classList.add('recording');
+        document.getElementById('recording-indicator').classList.remove('hidden');
+        document.querySelector('.recording-text').textContent = 'Listening...';
+    };
     
     speechRecognition.onresult = (event) => {
         let finalTranscript = '';
@@ -358,7 +367,7 @@ function initSpeechRecognition() {
         for (let i = event.resultIndex; i < event.results.length; i++) {
             const transcript = event.results[i][0].transcript;
             if (event.results[i].isFinal) {
-                finalTranscript += transcript;
+                finalTranscript += transcript + ' ';
             } else {
                 interimTranscript += transcript;
             }
@@ -366,27 +375,39 @@ function initSpeechRecognition() {
         
         // Show interim results
         if (interimTranscript) {
-            document.querySelector('.recording-text').textContent = interimTranscript;
+            document.querySelector('.recording-text').textContent = '🎤 ' + interimTranscript;
         }
         
         // Process final result
-        if (finalTranscript) {
-            console.log('🎤 Transcribed:', finalTranscript);
-            processVoiceMessage(finalTranscript);
+        if (finalTranscript.trim()) {
+            console.log('🎤 Transcribed:', finalTranscript.trim());
+            document.querySelector('.recording-text').textContent = '✓ Sending...';
+            processVoiceMessage(finalTranscript.trim());
         }
     };
     
     speechRecognition.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
-        stopRecording();
+        let errorMsg = 'Microphone error: ' + event.error;
+        
         if (event.error === 'not-allowed') {
-            alert('Microphone access denied. Please enable microphone permissions.');
+            errorMsg = '❌ Microphone access denied. Please enable microphone permissions.';
+            alert('Microphone access denied. Please enable microphone permissions in your browser settings.');
+        } else if (event.error === 'no-speech') {
+            errorMsg = '⚠️ No speech detected. Please try again.';
+            document.querySelector('.recording-text').textContent = errorMsg;
+        } else if (event.error === 'network') {
+            errorMsg = '⚠️ Network error. Please check your connection.';
+            document.querySelector('.recording-text').textContent = errorMsg;
         }
+        
+        console.error(errorMsg);
+        stopRecording();
     };
     
     speechRecognition.onend = () => {
+        console.log('🎤 Speech recognition ended');
         if (isRecording) {
-            // Auto-restart for continuous listening
             stopRecording();
         }
     };
@@ -396,6 +417,8 @@ function initSpeechRecognition() {
 
 async function startRecording() {
     try {
+        console.log('🎤 Starting recording process...');
+        
         // Initialize speech recognition if not already done
         if (!speechRecognition) {
             if (!initSpeechRecognition()) {
@@ -404,22 +427,42 @@ async function startRecording() {
             }
         }
         
-        // Request microphone permission first
-        await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Request microphone permission explicitly
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                } 
+            });
+            
+            // Stop the stream after getting permission (we just need to check permission)
+            stream.getTracks().forEach(track => track.stop());
+            console.log('✓ Microphone permission granted');
+            
+        } catch (permError) {
+            console.error('Microphone permission error:', permError);
+            if (permError.name === 'NotAllowedError') {
+                alert('❌ Microphone access denied. Please enable microphone permissions in your browser settings.');
+            } else if (permError.name === 'NotFoundError') {
+                alert('❌ No microphone found. Please check your device.');
+            } else {
+                alert('❌ Microphone error: ' + permError.message);
+            }
+            return;
+        }
         
+        // Now start speech recognition
         speechRecognition.start();
         isRecording = true;
         
-        // Update UI
-        document.getElementById('btn-record').classList.add('recording');
-        document.getElementById('recording-indicator').classList.remove('hidden');
-        document.querySelector('.recording-text').textContent = 'Listening...';
-        
-        console.log('🎤 Recording started');
+        console.log('🎤 Recording started, listening...');
         
     } catch (error) {
-        console.error('Microphone error:', error);
-        alert('Could not access microphone. Please check permissions.');
+        console.error('❌ Recording error:', error);
+        alert('Could not start recording: ' + error.message);
+        isRecording = false;
     }
 }
 
@@ -528,7 +571,47 @@ const CHAR_VOICES = {
     'finley': { pitch: 1.1, rate: 0.85 }   // Calm, organized
 };
 
-function speakText(text) {
+async function speakText(text) {
+    try {
+        // Try backend TTS first (supports multiple languages including Tamil)
+        const response = await fetch('http://127.0.0.1:5000/api/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text })
+        });
+        
+        if (response.ok) {
+            const audioBlob = await response.blob();
+            const audioUrl = URL.createObjectURL(audioBlob);
+            
+            // Create audio element and play it
+            const audio = new Audio(audioUrl);
+            audio.volume = 1.0;
+            
+            // Use character voice settings for timing
+            const voiceSettings = CHAR_VOICES[currentCharacter] || { pitch: 1.0, rate: 0.9 };
+            audio.playbackRate = voiceSettings.rate;
+            
+            audio.play().catch(err => {
+                console.error('❌ Audio playback failed:', err);
+                // Fallback to browser TTS if audio fails
+                fallbackTTS(text);
+            });
+            
+            console.log('🔊 Playing TTS audio');
+        } else {
+            console.warn('⚠️ TTS endpoint returned error, using fallback');
+            fallbackTTS(text);
+        }
+    } catch (error) {
+        console.error('❌ TTS error:', error);
+        // Fallback to browser speech synthesis
+        fallbackTTS(text);
+    }
+}
+
+function fallbackTTS(text) {
+    // Fallback to browser Web Speech API
     if ('speechSynthesis' in window) {
         speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
@@ -546,6 +629,7 @@ function speakText(text) {
         if (voice) utterance.voice = voice;
         
         speechSynthesis.speak(utterance);
+        console.log('🔊 Using fallback browser TTS');
     }
 }
 

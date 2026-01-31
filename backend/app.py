@@ -1,11 +1,14 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
 from config import Config
 from database import Database
 from ollama_service import OllamaService
+from language_detector import LanguageDetector
+from gtts import gTTS
 import os
 import time
 from datetime import datetime
+from io import BytesIO
 
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
 app.config.from_object(Config)
@@ -317,6 +320,51 @@ def detect_emotion_simple(text):
         return 'encouraging'
     else:
         return 'neutral'
+
+# ==================== TEXT-TO-SPEECH ====================
+
+@app.route('/api/tts', methods=['POST'])
+def text_to_speech():
+    """Convert text to speech with language detection"""
+    try:
+        data = request.json
+        text = data.get('text', '')
+        
+        if not text:
+            return jsonify({'error': 'No text provided'}), 400
+        
+        # Detect language from text
+        language = LanguageDetector.detect_language(text)
+        
+        # Map detected language to gTTS language code
+        lang_map = {
+            'ta': 'ta',      # Tamil
+            'mr': 'hi',      # Marathi (use Hindi voice as fallback)
+            'en': 'en'       # English
+        }
+        
+        gtts_lang = lang_map.get(language, 'en')
+        
+        print(f"🔊 Converting to speech: language={language}, gtts_lang={gtts_lang}, text={text[:50]}...")
+        
+        # Generate speech using gTTS
+        audio = gTTS(text=text, lang=gtts_lang, slow=False)
+        
+        # Save to BytesIO buffer instead of file
+        audio_buffer = BytesIO()
+        audio.write_to_fp(audio_buffer)
+        audio_buffer.seek(0)
+        
+        return send_file(
+            audio_buffer,
+            mimetype='audio/mp3',
+            as_attachment=False,
+            download_name='response.mp3'
+        )
+        
+    except Exception as e:
+        print(f"TTS error: {str(e)}")
+        return jsonify({'error': f'Text-to-speech failed: {str(e)}'}), 500
 
 # ==================== EMOJI SCAFFOLDING ====================
 
